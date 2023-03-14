@@ -353,6 +353,11 @@ public class PrestoS3FileSystem
         ObjectMetadata metadata = getS3ObjectMetadata(path);
 
         if (metadata == null) {
+            // (akhilg): Don't do the expensive listPrefix if the path has "savepoint" or "checkpoint"
+            //  This optimization allows us to avoid S3 rate limiting us when we checkpoint or savepoint.
+            if (path.getName().contains("savepoint") || path.getName().contains("checkpoint")) {
+                throw new FileNotFoundException("File does not exist: " + path);
+            }
             // check if this path is a directory
             Iterator<LocatedFileStatus> iterator = listPrefix(path, OptionalInt.of(1), ListingMode.SHALLOW_ALL);
             if (iterator.hasNext()) {
