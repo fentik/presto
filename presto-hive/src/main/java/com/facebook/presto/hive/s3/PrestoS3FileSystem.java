@@ -94,6 +94,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.amazonaws.regions.Regions.US_EAST_1;
@@ -353,12 +354,19 @@ public class PrestoS3FileSystem
         ObjectMetadata metadata = getS3ObjectMetadata(path);
 
         if (metadata == null) {
-            // (akhilg): Don't do the expensive listPrefix if the path has "savepoint" or "checkpoint"
-            //  This optimization allows us to avoid S3 rate limiting us when we checkpoint or savepoint.
-            if (path.toString().contains("/savepoints/") || path.toString().contains("/checkpoints/")) {
-                log.info("(HACK): Skipping doing an expensive LIST operation on S3 for savepoint " + path);
-                System.out.println("(HACK): Skipping doing an expensive LIST operation on S3 for savepoint " + path);
-                throw new FileNotFoundException("File does not exist: " + path);
+            // uri should be of the format s3://<s3_bucket>/<prefix>/<a>/<b>
+            String uri = path.toString();
+            // tokenArray should have ["s3:", "", "<s3_bucket>", "<prefix>", "<a>", "<b>"]
+            String[] tokenArray = uri.split(Path.SEPARATOR);
+            if (tokenArray.length > 4) {
+                // (akhilg): Don't do the expensive listPrefix if the path is an savepoint/checkpoint directory
+                //  of the form s3://<s3_bucket>/_entropy_/savepoints/
+                //  This optimization allows us to avoid S3 rate limiting us when we checkpoint or savepoint.
+                if (tokenArray[4].contains("/savepoints/") || tokenArray[4].contains("/checkpoints/")) {
+                    log.info("(HACK): Skipping doing an expensive LIST operation on S3 for savepoint " + path);
+                    System.out.println("(HACK): Skipping doing an expensive LIST operation on S3 for savepoint " + path);
+                    throw new FileNotFoundException("File does not exist: " + path);
+                }
             }
             // check if this path is a directory
             Iterator<LocatedFileStatus> iterator = listPrefix(path, OptionalInt.of(1), ListingMode.SHALLOW_ALL);
