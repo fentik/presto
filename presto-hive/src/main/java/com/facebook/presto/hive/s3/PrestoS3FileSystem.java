@@ -365,7 +365,8 @@ public class PrestoS3FileSystem
         if (metadata == null) {
             // (akhilg): Don't do the expensive listPrefix if the path has "savepoint" or "checkpoint"
             //  This optimization allows us to avoid S3 rate limiting us when we checkpoint or savepoint.
-            if (path.getName().contains("savepoint") || path.getName().contains("checkpoint")) {
+            if (path.toString().contains("savepoint") || path.toString().contains("checkpoint")) {
+                log.info("(HACK): Skipping doing an expensive LIST operation on S3 for savepoint " + path);
                 throw new FileNotFoundException("File does not exist: " + path);
             }
             // check if this path is a directory
