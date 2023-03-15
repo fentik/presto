@@ -362,7 +362,7 @@ public class PrestoS3FileSystem
                 // (akhilg): Don't do the expensive listPrefix if the path is an savepoint/checkpoint directory
                 //  of the form s3://<s3_bucket>/_entropy_/savepoints/
                 //  This optimization allows us to avoid S3 rate limiting us when we checkpoint or savepoint.
-                if (tokenArray[4].contains("/savepoints/") || tokenArray[4].contains("/checkpoints/")) {
+                if (tokenArray[4].equals("savepoints") || tokenArray[4].equals("checkpoints")) {
                     log.info("(HACK): Skipping doing an expensive LIST operation on S3 for savepoint " + path);
                     System.out.println("(HACK): Skipping doing an expensive LIST operation on S3 for savepoint " + path);
                     throw new FileNotFoundException("File does not exist: " + path);
