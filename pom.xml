@@ -33,6 +33,18 @@
         <tag>HEAD</tag>
     </scm>
 
+    <distributionManagement>
+      <repository>
+	<id>rubicon_github</id>
+	<name>Rubicon Apache Maven Package for Presto</name>
+	<url>https://maven.pkg.github.com/fentik/presto</url>
+      </repository>
+      <snapshotRepository>
+	<id>rubicon_github</id>
+	<name>Rubicon Apache Maven Package for Presto</name>
+	<url>https://maven.pkg.github.com/fentik/presto</url>
+      </snapshotRepository>
+    </distributionManagement>
     <properties>
         <air.main.basedir>${project.basedir}</air.main.basedir>
 
